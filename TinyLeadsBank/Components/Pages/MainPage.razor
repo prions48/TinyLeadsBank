@@ -1,0 +1,176 @@
+@page "/"
+@using TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@using TinyLeadsBank.Data.Users
+@inject TestBankService testService
+@inject IDialogService dialogService
+<AuthorizeView>
+    <Authorized>
+        @if (Loaded)
+        {
+            <MudExpansionPanels>
+                @foreach (Topic topic in Topics)
+                {
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudStack Row Justify="Justify.SpaceBetween">
+                                <MudText>@topic.TopicName</MudText>
+                                <MudStack Row>
+                                    <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.Add" OnClick="() => AddQuestion(topic)" />
+                                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.ListAlt" OnClick="() => EditCategories(topic)" />
+                                    <MudIconButton Color="Color.Error" Icon="@Icons.Material.TwoTone.DeleteForever" OnClick="() => DeleteTopic(topic)" />
+                                </MudStack>
+                            </MudStack>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudSimpleTable Striped Bordered>
+                                <tbody>
+                                    @foreach (Question question in topic.Questions.OrderBy(e => e.OrderNumber))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <MudIconButton Icon="@(question.View ? Icons.Material.TwoTone.Cancel : Icons.Material.TwoTone.RemoveRedEye)" Color="question.View ? Color.Warning : Color.Info" OnClick="() => question.View = !question.View" />
+                                            </td>
+                                            <td colspan="2">@question.QuestionText</td>
+                                            <td>
+                                                <MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.ListAlt" OnClick="() => EditCategories(question)" />
+                                                <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.Edit" OnClick="() => EditQuestion(question)" />
+                                                <MudIconButton Color="Color.Error" Icon="@Icons.Material.TwoTone.DeleteForever" OnClick="() => DeleteQuestion(topic, question)" />
+                                            </td>
+                                        </tr>
+                                        @if (question.View)
+                                        {
+                                            @foreach (QuestionOption option in question.Options.OrderBy(e => e.OrderNumber))
+                                            {
+                                                <tr>
+                                                    <td></td>
+                                                    <td>@option.OrderNumber</td>
+                                                    <td>@option.AnswerText</td>
+                                                    <td></td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
+            </MudExpansionPanels>
+        }
+        else
+        {
+            <MudButton OnClick="Load" Variant="Variant.Filled">Load</MudButton>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <i>Please log in</i>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter] public Auth0User? User { get; set; }
+    private bool Loaded { get; set; } = false;
+    private List<Topic> Topics { get; set; } = [];
+    private void Load()
+    {
+        if (User == null)
+            return;
+        Topics = testService.GetTopicsByUserID(User.UserID);
+        Loaded = true;
+    }
+    private async Task AddQuestion(Topic topic)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(CreateQuestion.TopicID), topic.ID);
+        parameters.Add(nameof(CreateQuestion.OrderNumber), topic.Questions.Count+1);
+        var dialog = dialogService.ShowAsync<CreateQuestion>("Create Question", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            var newquestion = result2.Data as Question;
+            if (newquestion != null)
+                topic.Questions.Add(newquestion);
+        }
+    }
+    private async Task EditQuestion(Question question)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = false,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(EditQuestionDialog.Question), question);
+        var dialog = dialogService.ShowAsync<EditQuestionDialog>("Edit Question", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+    }
+    private async Task DeleteTopic(Topic topic)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Message), $"Delete the topic \"{topic.TopicName}\"?");
+        parameters.Add(nameof(ConfirmDialog.ButtonText), "Yes, Delete");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Error);
+        var dialog = dialogService.ShowAsync<ConfirmDialog>("Confirm Delete?", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            Topics.Remove(topic);
+            testService.DeleteTopic(topic);
+        }
+    }
+    private async Task DeleteQuestion(Topic topic, Question question)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Message), $"Delete the question \"{question.QuestionText.Substring(30)}\"?");
+        parameters.Add(nameof(ConfirmDialog.ButtonText), "Yes, Delete");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Error);
+        var dialog = dialogService.ShowAsync<ConfirmDialog>("Confirm Delete?", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            topic.Questions.Remove(question);
+            testService.DeleteQuestion(question);
+        }
+    }
+    private async Task EditCategories(ICategoried cats)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(CategoryEditor.CatString), cats.Categories);
+        var dialog = dialogService.ShowAsync<CategoryEditor>("Edit Categories", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            cats.Categories = result2.Data as string;
+            if (cats is Question question)
+                testService.UpdateQuestion(question);
+            else if (cats is Topic topic)
+                testService.UpdateTopic(topic);
+        }
+    }
+}

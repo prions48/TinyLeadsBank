@@ -1,0 +1,100 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+@inject TestBankService testService
+
+<MudDialog>
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="Question.QuestionText"  @bind-Value:after="SetDirty" />
+            <MudSimpleTable Striped Bordered>
+                <tbody>
+                    @foreach (QuestionOption option in Question.Options.Where(e => !e.Delete))
+                    {
+                        <tr>
+                            <td>
+                                <MudTextField @bind-Value="option.AnswerText" @bind-Value:after="SetDirty" />
+                            </td>
+                            <td>
+                                <MudCheckBox @bind-Value="option.CorrectAnswer" />
+                            </td>
+                            <td>
+                                <MudIconButton Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" OnClick="() => Delete(option)" />
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>
+                            <MudTextField @bind-Value="NewOption" />
+                        </td>
+                        <td>
+                            <MudCheckBox @bind-Value="NewOptionCorrect" />
+                        </td>
+                        <td>
+                            <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" OnClick="Add" Disabled="string.IsNullOrWhiteSpace(NewOption)" />
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info"
+        Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Any(e => string.IsNullOrWhiteSpace(e.AnswerText)) 
+        || Question.Options.Where(e => !e.Delete).Count(e => e.CorrectAnswer) != 1">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Question Question { get; set; } = default!;
+    private string? NewOption { get; set; }
+    private bool NewOptionCorrect { get; set; }
+    private List<QuestionOption> Options { get; set; } = [];
+    private bool IsDirty { get; set; } = false;
+    private void SetDirty() => IsDirty = true;
+    protected override void OnInitialized()
+    {
+        foreach (QuestionOption option in Question.Options)
+        {
+            option.Delete = false;
+            option.CreateNew = false;
+        }
+    }
+    void Submit()
+    {
+        if (IsDirty)
+            testService.UpdateQuestion(Question);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void Delete(QuestionOption option)
+    {
+        if (option.CreateNew)
+            Question.Options.Remove(option);
+        else
+            option.Delete = true;
+        ResetNumbers();
+    }
+    private void Add()
+    {
+        QuestionOption option = new()
+        {
+            QuestionID = Question.ID,
+            CreateNew=true,
+            CorrectAnswer = NewOptionCorrect,
+            AnswerText=NewOption!
+        };
+        Question.Options.Add(option);
+        ResetNumbers();
+    }
+    private void ResetNumbers()
+    {
+        int ctr = 0;
+        foreach (QuestionOption option in Question.Options.Where(e => !e.Delete))
+        {
+            option.OrderNumber = ctr++;
+        }
+        SetDirty();
+    }
+}

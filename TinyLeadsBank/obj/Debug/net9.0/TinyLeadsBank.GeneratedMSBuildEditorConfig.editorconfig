@@ -1,0 +1,104 @@
+is_global = true
+build_property.MudDebugAnalyzer = 
+build_property.MudAllowedAttributePattern = 
+build_property.MudAllowedAttributeList = 
+build_property.TargetFramework = net9.0
+build_property.TargetFramework = net9.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = TinyLeadsBank
+build_property.RootNamespace = TinyLeadsBank
+build_property.ProjectDir = /Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /Users/prions/Coding/TinyLeadsBank/TinyLeadsBank
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 9.0
+build_property.EnableCodeStyleSeverity = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/CategoryEditor.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0NhdGVnb3J5RWRpdG9yLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/ConfirmDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0NvbmZpcm1EaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/CreateQuestion.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0NyZWF0ZVF1ZXN0aW9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/CreateTopic.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0NyZWF0ZVRvcGljLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/EditQuestionDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0VkaXRRdWVzdGlvbkRpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/AuthStuff.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BdXRoU3R1ZmYucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db3VudGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/Files.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9GaWxlcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/LogInOut.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Mb2dJbk91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/MainPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NYWluUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/ThemeMode.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9UaGVtZU1vZGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Pages/TImerPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9USW1lclBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Sb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9fSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-z000zvbvrs

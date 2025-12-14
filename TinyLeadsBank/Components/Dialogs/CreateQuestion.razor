@@ -1,0 +1,87 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+@inject TestBankService testService
+
+<MudDialog>
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="Question.QuestionText" Lines="3" Label="Question Text" />
+            <MudSimpleTable Striped Bordered>
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Question</th>
+                        <th>Correct</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (QuestionOption option in Question.Options)
+                    {
+                        <tr>
+                            <td>@option.OrderNumber</td>
+                            <td>
+                                <MudTextField @bind-Value="option.AnswerText" />
+                            </td>
+                            <td>
+                                <MudCheckBox @bind-Value="option.CorrectAnswer" />
+                            </td>
+                            <td>
+                                <MudIconButton OnClick="() => Delete(option)" Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" />
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>
+                            <MudButton OnClick="Add" Color="Color.Info" Disabled="string.IsNullOrWhiteSpace(AnswerText)">Add</MudButton> 
+                        </td>
+                        <td><MudTextField @bind-Value="AnswerText" Immediate Label="New Answer" /></td>
+                        <td>
+                            <MudCheckBox @bind-Value="Correct" />
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info" 
+        Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Count(e => e.CorrectAnswer) != 1 || !string.IsNullOrEmpty(AnswerText)">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Guid TopicID { get; set; }
+    [Parameter] public int OrderNumber { get; set; }
+    private string? AnswerText { get; set; }
+    private bool Correct { get; set; }
+    private Question Question { get; set; } = new();
+    private void Add()
+    {
+        Question.Options.Add(new() {
+            AnswerText = AnswerText!,
+            CorrectAnswer = Correct,
+            OrderNumber = Question.Options.Count+1,
+            QuestionID=Question.ID
+        });
+        AnswerText = null;
+        Correct = false;
+    }
+    private void Delete(QuestionOption option)
+    {
+        Question.Options.Remove(option);
+        for (int i = 0; i < Question.Options.Count; i++)
+            Question.Options[i].OrderNumber = i + 1;
+    }
+    void Submit()
+    {
+        Question.TopicID = TopicID;
+        Question.OrderNumber = OrderNumber;
+        testService.CreateQuestion(Question);
+        MudDialog.Close(DialogResult.Ok(Question));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

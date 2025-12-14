@@ -1,0 +1,36 @@
+﻿<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<ol type="1">
+    @foreach (TestQuestion question in Questions)
+    {
+        <li>@question.QuestionText</li>
+        <ol type="A">
+            @foreach (TestOption option in question.Options)
+            {
+                <li>@option.OptionText</li>
+            }
+        </ol>
+    }
+</ol>
+
+@code {
+    private List<TestQuestion> Questions = [
+    new TestQuestion() { QuestionText = "Question #1", QuestionNumber=1, Options = [ new() { OptionText = "Thing 1", Deco = "A."}, new() { OptionText = "Thing 2", Deco = "B."}]},
+    new TestQuestion() { QuestionText = "Question #2", QuestionNumber=2, Options = [ new() { OptionText = "Thing 1", Deco = "A."}, new() { OptionText = "Thing 2", Deco = "B."}]}
+    ];
+
+    public class TestQuestion
+    {
+        public string QuestionText { get; set; }
+        public int QuestionNumber { get; set; }
+        public List<TestOption> Options { get; set; } = [];
+    }
+    public class TestOption
+    {
+        public string OptionText { get; set; }
+        public string Deco { get; set; }
+        public bool IsCorrect { get; set; }
+    }
+}
