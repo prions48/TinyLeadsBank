@@ -4,11 +4,17 @@
 @using TinyLeadsBank.Data.Users
 @inject TestBankService testService
 @inject IDialogService dialogService
-<AuthorizeView>
-    <Authorized>
+@*<AuthorizeView>
+    <Authorized>*@
         @if (Loaded)
         {
-            <MudExpansionPanels>
+            <MudExpansionPanels MultiExpansion>
+                <MudExpansionPanel Text="Create" Expanded=true>
+                    <MudStack Row>
+                        <MudButton OnClick="CreateNewTopic" Variant="Variant.Filled" Color="Color.Info">Create Topic</MudButton>
+                        <MudButton OnClick="() => CreateNewExam()" Variant="Variant.Filled" Color="Color.Info">Create Exam</MudButton>
+                    </MudStack>
+                </MudExpansionPanel>
                 @foreach (Topic topic in Topics)
                 {
                     <MudExpansionPanel>
@@ -62,11 +68,11 @@
         {
             <MudButton OnClick="Load" Variant="Variant.Filled">Load</MudButton>
         }
-    </Authorized>
+    @*</Authorized>
     <NotAuthorized>
         <i>Please log in</i>
     </NotAuthorized>
-</AuthorizeView>
+</AuthorizeView>*@
 
 @code {
     [CascadingParameter] public Auth0User? User { get; set; }
@@ -74,9 +80,50 @@
     private List<Topic> Topics { get; set; } = [];
     private void Load()
     {
-        if (User == null)
-            return;
-        Topics = testService.GetTopicsByUserID(User.UserID);
+        //if (User == null)
+        //    return;
+        //Topics = testService.GetTopicsByUserID(User.UserID);
+        Topics = new List<Topic>(){
+            new() { TopicName = "Topic 1", Questions = new List<Question>() {
+                new Question()
+                {
+                    QuestionText = "What is delicious", OrderNumber=1, Options= new List<QuestionOption>() {
+                        new() { OrderNumber=1, AnswerText = "candy", CorrectAnswer=true },
+                        new() { OrderNumber=2, AnswerText = "truth", CorrectAnswer=false },
+                        new() { OrderNumber=3, AnswerText = "beauty", CorrectAnswer=false }
+                    }
+                },
+                new Question()
+                {
+                    QuestionText = "I love you", OrderNumber=2, Options= new List<QuestionOption>() {
+                        new() { OrderNumber=1, AnswerText = "I love you too", CorrectAnswer=false },
+                        new() { OrderNumber=2, AnswerText = "I know", CorrectAnswer=false },
+                        new() { OrderNumber=3, AnswerText = "fhqwgads", CorrectAnswer=true }
+                    }
+                }
+            },
+        },
+        new() {
+            TopicName = "Topic 2", Questions = new List<Question>() {
+                new Question()
+                {
+                    QuestionText = "Best sword art",OrderNumber=1, Options= new List<QuestionOption>() {
+                        new() { OrderNumber=1, AnswerText = "Haedong Gumdo", CorrectAnswer=false },
+                        new() { OrderNumber=2, AnswerText = "Niten Ichy Ryu", CorrectAnswer=false },
+                        new() { OrderNumber=3, AnswerText = "Hiten Mitsurugi Ryu", CorrectAnswer=true }
+                    }
+                },
+                new Question()
+                {
+                    QuestionText = "Best karate",OrderNumber=2, Options= new List<QuestionOption>() {
+                        new() { OrderNumber=1, AnswerText = "Tang Soo Do", CorrectAnswer=false },
+                        new() { OrderNumber=2, AnswerText = "Shotokan", CorrectAnswer=true },
+                        new() { OrderNumber=3, AnswerText = "Isshin Ryu", CorrectAnswer=false }
+                    }
+                }
+            },
+        }
+        };
         Loaded = true;
     }
     private async Task AddQuestion(Topic topic)
@@ -171,6 +218,81 @@
                 testService.UpdateQuestion(question);
             else if (cats is Topic topic)
                 testService.UpdateTopic(topic);
+        }
+    }
+    private async Task CreateNewTopic()
+    {
+        if (User == null)
+            return;
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(CreateTopic.UserID), User.UserID);
+        var dialog = dialogService.ShowAsync<CreateTopic>("Create New Topic", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            Topic? newtopic = result2.Data as Topic;
+            if (newtopic != null)
+            {
+                Topics.Add(newtopic);
+                //testService.CreateTopic(newtopic);
+            }
+        }
+    }
+    private async Task CreateNewExam(Topic? topic = null)
+    {
+        List<Topic> topics = [];
+        if (topic == null)
+        {
+            var options = new DialogOptions()
+            {
+                CloseOnEscapeKey = true,
+                //FullWidth = true,
+                MaxWidth = MaxWidth.ExtraLarge
+            };
+            var parameters = new DialogParameters();
+            parameters.Add(nameof(TopicsPickerDialog.Topics), Topics);
+            var dialog = dialogService.ShowAsync<TopicsPickerDialog>("Select Exam Topics", parameters, options);
+            var result = await dialog;
+            var result2 = await result.Result;
+            if (result2?.Canceled == false)
+            {
+                List<Topic>? data = result2.Data as List<Topic>;
+                if (data != null && data.Count > 0)
+                {
+                    topics = data;
+                }
+                else
+                    return;
+            }
+        }
+        else
+        {
+            topics.Add(topic);
+        }
+        //open dialog to create exam??
+        var options2 = new DialogOptions()
+            {
+                CloseOnEscapeKey = true,
+                FullWidth = true
+            };
+        var parameters2 = new DialogParameters();
+        parameters2.Add(nameof(ExamQuestionPicker.Questions), topics.SelectMany(e => e.Questions).ToList());
+        var dialog2 = dialogService.ShowAsync<ExamQuestionPicker>("Select Exam Questions", parameters2, options2);
+        var result3 = await dialog2;
+        var result4 = await result3.Result;
+        if (result4?.Canceled == false)
+        {
+            var data2 = result4.Data as Exam;
+            if (data2 != null)
+            {
+                
+            }
         }
     }
 }

@@ -1,0 +1,101 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+@inject TestBankService testService
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs=6 sm=6 md=6 lg=6 xl=6>
+                <MudSimpleTable Bordered>
+                    <thead>
+                        <tr>
+                            <th>Available Questions</th>
+                            <th>View</th>
+                            <th>Select</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Question question in Questions)
+                        {
+                            <tr>
+                                <td>@question.QuestionText</td>
+                                <td>
+                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.TwoTone.RemoveRedEye" OnClick="() => View(question)" />
+                                </td>
+                                <td>
+                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.Filled.AddCircle" 
+                                    Disabled="Exam.ExamQuestions.Any(e => e.QuestionID == question.ID)" OnClick="() => SwitchQuestion(question)" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem xs=6 sm=6 md=6 lg=6 xl=6>
+                <MudSimpleTable Bordered>
+                    <thead>
+                        <tr>
+                            <th>Selected Questions</th>
+                            <th>View</th>
+                            <th>Unselect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Question question in Exam.ExamQuestions.Select(e => e.Question))
+                        {
+                            <tr>
+                                <td>@question.QuestionText</td>
+                                <td>
+                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.TwoTone.RemoveRedEye" OnClick="() => View(question)" />
+                                </td>
+                                <td>
+                                    <MudIconButton Color="Color.Warning" Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => SwitchQuestion(question)" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public List<Question> Questions { get; set; } = [];
+    [Parameter] public Exam Exam { get; set; } = new();
+    void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(Exam));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void SwitchQuestion(Question question)
+    {
+        if (Exam.ExamQuestions.Any(e => e.QuestionID == question.ID))
+        {
+            Exam.ExamQuestions.RemoveAll(e => e.QuestionID == question.ID);
+        }
+        else
+        {
+            Exam.ExamQuestions.Add(new() { ExamID = Exam.ID, OrderNumber=Exam.ExamQuestions.Count+1, QuestionID=question.ID, Question=question});
+        }
+    }
+    private async Task View(Question question)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = false,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(EditQuestionDialog.Question), question);
+        var dialog = dialogService.ShowAsync<EditQuestionDialog>("View Question", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+    }
+}

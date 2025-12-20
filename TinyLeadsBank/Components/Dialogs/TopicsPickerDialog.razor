@@ -1,0 +1,78 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+@inject TestBankService testService
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs=6 sm=6 md=6 lg=6 xl=6>
+                <MudSimpleTable Bordered>
+                    <thead>
+                        <tr>
+                            <th>Available Topics</th>
+                            <th>Select</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Topic topic in Topics)
+                        {
+                            <tr>
+                                <td>@topic.TopicName</td>
+                                <td>
+                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.Filled.AddCircle" 
+                                    Disabled="SelectedTopics.Contains(topic)" OnClick="() => SwitchTopic(topic)" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem xs=6 sm=6 md=6 lg=6 xl=6>
+                <MudSimpleTable Bordered>
+                    <thead>
+                        <tr>
+                            <th>Selected Topics</th>
+                            <th>Unselect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Topic topic in SelectedTopics)
+                        {
+                            <tr>
+                                <td>@topic.TopicName</td>
+                                <td>
+                                    <MudIconButton Color="Color.Warning" Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => SwitchTopic(topic)" />
+                                    
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info" 
+        Disabled="SelectedTopics.Count == 0">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public List<Topic> Topics { get; set; } = [];
+    private List<Topic> SelectedTopics { get; set; } = [];
+    void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(SelectedTopics));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void SwitchTopic(Topic topic)
+    {
+        if (SelectedTopics.Contains(topic))
+            SelectedTopics.Remove(topic);
+        else
+            SelectedTopics.Add(topic);
+    }
+}

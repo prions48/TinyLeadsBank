@@ -58,7 +58,10 @@
     private List<string> Categories { get; set; } = [];
     void Submit()
     {
-        CatString = string.Join("|",Categories);
+        if (Categories.Count == 0)
+            CatString = null;
+        else
+            CatString = string.Join("|",Categories);
         MudDialog.Close(DialogResult.Ok(CatString));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());

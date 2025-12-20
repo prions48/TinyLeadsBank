@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TinyLeadsBank")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2b2df4d0d17a7527eaa8eb0587287f664cc02b6")]
 [assembly: System.Reflection.AssemblyProductAttribute("TinyLeadsBank")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TinyLeadsBank")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

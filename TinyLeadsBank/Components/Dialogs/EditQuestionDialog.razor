@@ -13,41 +13,55 @@
                     {
                         <tr>
                             <td>
-                                <MudTextField @bind-Value="option.AnswerText" @bind-Value:after="SetDirty" />
+                                <MudTextField @bind-Value="option.AnswerText" @bind-Value:after="SetDirty" Disabled="!Edit" />
                             </td>
                             <td>
-                                <MudCheckBox @bind-Value="option.CorrectAnswer" />
+                                <MudCheckBox @bind-Value="option.CorrectAnswer" Disabled="!Edit" />
+                            </td>
+                            @if (Edit)
+                            {
+                                <td>
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" OnClick="() => Delete(option)" />
+                                </td>
+                            }
+                        </tr>
+                    }
+                    @if (Edit)
+                    {
+                        <tr>
+                            <td>
+                                <MudTextField @bind-Value="NewOption" />
                             </td>
                             <td>
-                                <MudIconButton Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" OnClick="() => Delete(option)" />
+                                <MudCheckBox @bind-Value="NewOptionCorrect" />
+                            </td>
+                            <td>
+                                <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" OnClick="Add" Disabled="string.IsNullOrWhiteSpace(NewOption)" />
                             </td>
                         </tr>
                     }
-                    <tr>
-                        <td>
-                            <MudTextField @bind-Value="NewOption" />
-                        </td>
-                        <td>
-                            <MudCheckBox @bind-Value="NewOptionCorrect" />
-                        </td>
-                        <td>
-                            <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" OnClick="Add" Disabled="string.IsNullOrWhiteSpace(NewOption)" />
-                        </td>
-                    </tr>
                 </tbody>
             </MudSimpleTable>
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info"
-        Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Any(e => string.IsNullOrWhiteSpace(e.AnswerText)) 
-        || Question.Options.Where(e => !e.Delete).Count(e => e.CorrectAnswer) != 1">Save</MudButton>
+        @if (Edit)
+        {
+            <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info"
+            Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Any(e => string.IsNullOrWhiteSpace(e.AnswerText)) 
+            || Question.Options.Where(e => !e.Delete).Count(e => e.CorrectAnswer) != 1">Save</MudButton>
+        }
+        else
+        {
+            <MudButton OnClick="Cancel" Color="Color.Default" Variant="Variant.Filled">Close</MudButton>
+        }
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter, EditorRequired] public Question Question { get; set; } = default!;
+    [Parameter] public bool Edit { get; set; } = false;
     private string? NewOption { get; set; }
     private bool NewOptionCorrect { get; set; }
     private List<QuestionOption> Options { get; set; } = [];
