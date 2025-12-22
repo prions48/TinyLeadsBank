@@ -6,7 +6,7 @@
 <MudDialog>
     <DialogContent>
         <MudStack>
-            <MudTextField @bind-Value="Question.QuestionText"  @bind-Value:after="SetDirty" />
+            <MudTextField @bind-Value="Question.QuestionText"  @bind-Value:after="SetDirty" Disabled="!Edit" />
             <MudSimpleTable Striped Bordered>
                 <tbody>
                     @foreach (QuestionOption option in Question.Options.Where(e => !e.Delete))
@@ -77,8 +77,8 @@
     }
     void Submit()
     {
-        if (IsDirty)
-            testService.UpdateQuestion(Question);
+        //if (IsDirty)
+            //testService.UpdateQuestion(Question);
         MudDialog.Close(DialogResult.Ok(true));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());

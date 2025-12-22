@@ -33,6 +33,7 @@ namespace TinyLeadsBank.Data.TestBank
             _context.TestBankTopics.Remove(topic);
             _context.SaveChanges();
         }
+        #region Questions
         private List<Question> GetQuestionsByTopic(Guid topicid)
         {
             List<Question> questions = _context.TestBankQuestions.Where(e => e.TopicID == topicid).ToList();
@@ -70,5 +71,31 @@ namespace TinyLeadsBank.Data.TestBank
                 _context.TestBankQuestionOptions.Remove(option);
             _context.SaveChanges();
         }
+        #endregion
+
+        #region Exams
+        public void CreateExam(Exam exam)
+        {
+            _context.TestBankExams.Add(exam);
+            foreach (ExamQuestion question in exam.ExamQuestions)
+            {
+                _context.TestBankExamQuestions.Add(question);
+            }
+            _context.SaveChanges();
+        }
+        public void UpdateExam(Exam exam)
+        {
+            _context.TestBankExams.Update(exam);
+            foreach (ExamQuestion question in exam.ExamQuestions)
+            {
+                if (question.Delete && !question.CreateNew)
+                    _context.TestBankExamQuestions.Remove(question);
+                else if (question.CreateNew)
+                    _context.TestBankExamQuestions.Add(question);
+                else
+                    _context.TestBankExamQuestions.Update(question);
+            }
+        }
+        #endregion
     }
 }

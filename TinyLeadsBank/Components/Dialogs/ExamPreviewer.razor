@@ -1,0 +1,18 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+
+<MudDialog>
+    <DialogContent>
+        @((MarkupString)Preview)
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Preview { get; set; } = "";
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

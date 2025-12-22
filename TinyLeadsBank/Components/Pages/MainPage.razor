@@ -12,8 +12,32 @@
                 <MudExpansionPanel Text="Create" Expanded=true>
                     <MudStack Row>
                         <MudButton OnClick="CreateNewTopic" Variant="Variant.Filled" Color="Color.Info">Create Topic</MudButton>
-                        <MudButton OnClick="() => CreateNewExam()" Variant="Variant.Filled" Color="Color.Info">Create Exam</MudButton>
+                        <MudButton OnClick="() => EditExam()" Variant="Variant.Filled" Color="Color.Info">Create Exam</MudButton>
                     </MudStack>
+                    <MudSimpleTable Striped Bordered>
+                        <thead>
+                            <tr>
+                                <th>In Progress Exams</th>
+                                <th>Edit</th>
+                                <th>Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Exam exam in Exams)
+                            {
+                                <tr>
+                                    <td>@exam.TestName</td>
+                                    <td>
+                                        <MudIconButton Color="Color.Success" OnClick="() => EditExam(null, exam)" Icon="@Icons.Material.TwoTone.Edit" />
+                                    </td>
+                                    <td>
+                                        <MudIconButton Color="Color.Info" OnClick="() => PreviewExam(exam)" Icon="@Icons.Material.TwoTone.RemoveRedEye" />
+                                        <MudIconButton Color="Color.Success" OnClick="() => PreviewExam(exam, true)" Icon="@Icons.Material.TwoTone.CheckCircle" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
                 </MudExpansionPanel>
                 @foreach (Topic topic in Topics)
                 {
@@ -78,6 +102,7 @@
     [CascadingParameter] public Auth0User? User { get; set; }
     private bool Loaded { get; set; } = false;
     private List<Topic> Topics { get; set; } = [];
+    private List<Exam> Exams { get; set; } = [];
     private void Load()
     {
         //if (User == null)
@@ -155,6 +180,7 @@
         };
         var parameters = new DialogParameters();
         parameters.Add(nameof(EditQuestionDialog.Question), question);
+        parameters.Add(nameof(EditQuestionDialog.Edit), true);
         var dialog = dialogService.ShowAsync<EditQuestionDialog>("Edit Question", parameters, options);
         var result = await dialog;
         var result2 = await result.Result;
@@ -244,7 +270,7 @@
             }
         }
     }
-    private async Task CreateNewExam(Topic? topic = null)
+    private async Task EditExam(Topic? topic = null, Exam? exam = null)
     {
         List<Topic> topics = [];
         if (topic == null)
@@ -270,6 +296,8 @@
                 else
                     return;
             }
+            else
+                return;
         }
         else
         {
@@ -283,16 +311,48 @@
             };
         var parameters2 = new DialogParameters();
         parameters2.Add(nameof(ExamQuestionPicker.Questions), topics.SelectMany(e => e.Questions).ToList());
+        parameters2.Add(nameof(ExamQuestionPicker.UserID), User?.UserID ?? Guid.Empty);
+        if (exam != null)
+            parameters2.Add(nameof(ExamQuestionPicker.Exam), exam);
         var dialog2 = dialogService.ShowAsync<ExamQuestionPicker>("Select Exam Questions", parameters2, options2);
         var result3 = await dialog2;
         var result4 = await result3.Result;
         if (result4?.Canceled == false)
         {
             var data2 = result4.Data as Exam;
-            if (data2 != null)
+            if (data2 != null && exam == null)
             {
-                
+                Exams.Add(data2);
             }
         }
+    }
+    private async Task PreviewExam(Exam exam, bool keymode = false)
+    {
+        //open dialog
+        string preview = "<ol type=\"1\">";
+        foreach (ExamQuestion question in exam.ExamQuestions.OrderBy(e => e.OrderNumber))
+        {
+            preview += "<li>" + question.Question.QuestionText + "<ol type=\"A\">";
+            foreach (QuestionOption option in question.Question.Options)
+            {
+                if (keymode && option.CorrectAnswer)
+                    preview += "<b>";
+                preview += "<li>" + option.AnswerText + "</li>";
+                if (keymode && option.CorrectAnswer)
+                    preview += "</b>";
+            }
+            preview += "</ol></li>";
+        }
+        preview += "</ol>";
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ExamPreviewer.Preview), preview);
+        var dialog = dialogService.ShowAsync<ExamPreviewer>("Preview Exam " + exam.TestName, parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
     }
 }

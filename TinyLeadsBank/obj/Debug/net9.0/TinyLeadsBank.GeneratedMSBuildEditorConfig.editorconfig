@@ -55,6 +55,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0VkaXRRdWVzdGlvbkRpYWxvZy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/ExamPreviewer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0V4YW1QcmV2aWV3ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/Components/Dialogs/ExamQuestionPicker.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9EaWFsb2dzL0V4YW1RdWVzdGlvblBpY2tlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

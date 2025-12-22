@@ -6,6 +6,9 @@
 <MudDialog>
     <DialogContent>
         <MudGrid>
+            <MudItem xs=12 sm=12 md=12 lg=12 xl=12>
+                <MudTextField @bind-Value="Exam.TestName" Label="Exam Name" />
+            </MudItem>
             <MudItem xs=6 sm=6 md=6 lg=6 xl=6>
                 <MudSimpleTable Bordered>
                     <thead>
@@ -36,21 +39,26 @@
                 <MudSimpleTable Bordered>
                     <thead>
                         <tr>
+                            <th>Order</th>
                             <th>Selected Questions</th>
                             <th>View</th>
                             <th>Unselect</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (Question question in Exam.ExamQuestions.Select(e => e.Question))
+                        @foreach (ExamQuestion question in Exam.ExamQuestions.Where(e => !e.Delete).OrderBy(e => e.OrderNumber))
                         {
                             <tr>
-                                <td>@question.QuestionText</td>
                                 <td>
-                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.TwoTone.RemoveRedEye" OnClick="() => View(question)" />
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.ArrowCircleUp" OnClick="() => SwapUp(question)" Color="Color.Primary" />
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.ArrowCircleDown" OnClick="() => SwapDown(question)" Color="Color.Primary" />
+                                </td>
+                                <td>@question.Question!.QuestionText</td>
+                                <td>
+                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.TwoTone.RemoveRedEye" OnClick="() => View(question.Question)" />
                                 </td>
                                 <td>
-                                    <MudIconButton Color="Color.Warning" Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => SwitchQuestion(question)" />
+                                    <MudIconButton Color="Color.Warning" Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => SwitchQuestion(question.Question)" />
                                 </td>
                             </tr>
                         }
@@ -61,7 +69,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info">Submit</MudButton>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info" Disabled="string.IsNullOrWhiteSpace(Exam.TestName)">Submit</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -69,20 +77,59 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public List<Question> Questions { get; set; } = [];
     [Parameter] public Exam Exam { get; set; } = new();
+    [Parameter] public Guid UserID { get; set; }
     void Submit()
     {
+        if (Exam.UserID == Guid.Empty)
+        {
+            Exam.UserID = UserID;
+            //testService.CreateExam(Exam);
+        }
+        else
+        {
+            //testService.UpdateExam(Exam);
+        }
         MudDialog.Close(DialogResult.Ok(Exam));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private void SwitchQuestion(Question question)
     {
-        if (Exam.ExamQuestions.Any(e => e.QuestionID == question.ID))
+        if (Exam.ExamQuestions.Any(e => !e.Delete && e.QuestionID == question.ID))
         {
-            Exam.ExamQuestions.RemoveAll(e => e.QuestionID == question.ID);
+            foreach (ExamQuestion eq in Exam.ExamQuestions.Where(e => e.QuestionID == question.ID))
+            {
+                eq.Delete = true;
+            }
         }
         else
         {
-            Exam.ExamQuestions.Add(new() { ExamID = Exam.ID, OrderNumber=Exam.ExamQuestions.Count+1, QuestionID=question.ID, Question=question});
+            Exam.ExamQuestions.Add(new() { ExamID = Exam.ID, OrderNumber=Exam.ExamQuestions.Count+1, QuestionID=question.ID, Question=question, CreateNew = true});
+        }
+    }
+    private void SwapUp(ExamQuestion question)
+    {
+        Exam.ExamQuestions = Exam.ExamQuestions.OrderBy(e => e.OrderNumber).ToList();
+        for (int i = 1; i < Exam.ExamQuestions.Count; i++)
+        {
+            if (Exam.ExamQuestions[i].ID == question.ID)
+            {
+                int orderNumber = Exam.ExamQuestions[i].OrderNumber;
+                Exam.ExamQuestions[i].OrderNumber = Exam.ExamQuestions[i-1].OrderNumber;
+                Exam.ExamQuestions[i-1].OrderNumber = orderNumber;
+            }
+        }
+    }
+    private void SwapDown(ExamQuestion question)
+    {
+        Exam.ExamQuestions = Exam.ExamQuestions.OrderBy(e => e.OrderNumber).ToList();
+        for (int i = 0; i < Exam.ExamQuestions.Count-1; i++)
+        {
+            if (Exam.ExamQuestions[i].ID == question.ID)
+            {
+                int orderNumber = Exam.ExamQuestions[i].OrderNumber;
+                Exam.ExamQuestions[i].OrderNumber = Exam.ExamQuestions[i+1].OrderNumber;
+                Exam.ExamQuestions[i+1].OrderNumber = orderNumber;
+            }
         }
     }
     private async Task View(Question question)
