@@ -4,12 +4,14 @@
 @using TinyLeadsBank.Data.Users
 @inject TestBankService testService
 @inject IDialogService dialogService
+@inject NavigationManager navManager
+<PageTitle>Tiny Leads Test Bank</PageTitle>
 <AuthorizeView>
     <Authorized>
         @if (Loaded)
         {
             <MudExpansionPanels MultiExpansion>
-                <MudExpansionPanel Text="Create" Expanded=true>
+                <MudExpansionPanel Text="Control Panel & Exams" Expanded=true>
                     <MudStack Row>
                         <MudButton OnClick="CreateNewTopic" Variant="Variant.Filled" Color="Color.Info">Create Topic</MudButton>
                         <MudButton OnClick="() => EditExam()" Variant="Variant.Filled" Color="Color.Info">Create Exam</MudButton>
@@ -17,22 +19,29 @@
                     <MudSimpleTable Striped Bordered>
                         <thead>
                             <tr>
-                                <th>In Progress Exams</th>
+                                <th>
+                                    Exams
+                                    <MudToggleIconButton @bind-Toggled="ShowClosedExams" Color="Color.Info" Icon="@Icons.Material.TwoTone.List"
+                                                         ToggledColor="Color.Primary" ToggledIcon="@Icons.Material.TwoTone.Checklist" />
+                                </th>
                                 <th>Edit</th>
-                                <th>Preview</th>
+                                <th>View</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (Exam exam in Exams)
+                            @foreach (Exam exam in Exams.Where(e => !e.Closed || ShowClosedExams).OrderBy(e => e.CreatedTimeStamp))
                             {
                                 <tr>
                                     <td>@exam.TestName</td>
                                     <td>
                                         <MudIconButton Color="Color.Success" OnClick="() => EditExam(null, exam)" Icon="@Icons.Material.TwoTone.Edit" />
+                                        <MudIconButton Color="Color.Warning" OnClick="() => CloseExam(exam)" Icon="@Icons.Material.TwoTone.Cancel" />
+                                        <MudIconButton Color="Color.Error" OnClick="() => DeleteExam(exam)" Icon="@Icons.Material.TwoTone.DeleteForever" />
                                     </td>
                                     <td>
                                         <MudIconButton Color="Color.Info" OnClick="() => PreviewExam(exam)" Icon="@Icons.Material.TwoTone.RemoveRedEye" />
                                         <MudIconButton Color="Color.Success" OnClick="() => PreviewExam(exam, true)" Icon="@Icons.Material.TwoTone.CheckCircle" />
+                                        <MudIconButton Color="Color.Primary" Href="@($"/exam/{exam.ID}")" Target="_blank" Icon="@Icons.Material.TwoTone.ArrowCircleRight" />
                                     </td>
                                 </tr>
                             }
@@ -64,7 +73,8 @@
                                             </td>
                                             <td colspan="2">@question.QuestionText</td>
                                             <td>
-                                                <MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.ListAlt" OnClick="() => EditCategories(question)" />
+                                                @*categories for questions needs some rethinking, let's not leave clutter in the meantime*@
+                                                @*<MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.ListAlt" OnClick="() => EditCategories(question)" />*@
                                                 <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.Edit" OnClick="() => EditQuestion(question)" />
                                                 <MudIconButton Color="Color.Error" Icon="@Icons.Material.TwoTone.DeleteForever" OnClick="() => DeleteQuestion(topic, question)" />
                                             </td>
@@ -91,7 +101,8 @@
         }
         else
         {
-            <MudButton OnClick="Load" Variant="Variant.Filled">Load</MudButton>
+            @*<MudButton OnClick="Load" Variant="Variant.Filled">Load</MudButton>*@
+            <i>Loading, please be patient...</i>
         }
     </Authorized>
     <NotAuthorized>
@@ -104,6 +115,13 @@
     private bool Loaded { get; set; } = false;
     private List<Topic> Topics { get; set; } = [];
     private List<Exam> Exams { get; set; } = [];
+    protected override void OnParametersSet()
+    {
+        if (!Loaded && User != null)
+        {
+            Load();
+        }
+    }
     private void Load()
     {
         if (User == null)
@@ -161,7 +179,7 @@
             MaxWidth = MaxWidth.ExtraLarge
         };
         var parameters = new DialogParameters();
-        parameters.Add(nameof(CreateQuestion.TopicID), topic.ID);
+        parameters.Add(nameof(CreateQuestion.Topic), topic);
         parameters.Add(nameof(CreateQuestion.OrderNumber), topic.Questions.Count+1);
         var dialog = dialogService.ShowAsync<CreateQuestion>("Create Question", parameters, options);
         var result = await dialog;
@@ -348,23 +366,11 @@
     }
     private async Task PreviewExam(Exam exam, bool keymode = false)
     {
+        if (User == null)
+            return;
         //open dialog
-        string preview = "<ol type=\"1\">";
         List<Image> images = testService.GetImagesByUserID(User.UserID);
-        foreach (ExamQuestion question in exam.ExamQuestions.OrderBy(e => e.OrderNumber))
-        {
-            preview += "<li>" + (question.Question.ImageID == null ? "" : $"<img src=\"data:image/png;base64, {images.FirstOrDefault(e => e.ID == question.Question.ImageID)?.ImageContent}\" /><br />") + question.Question.QuestionText + "<ol type=\"A\">";
-            foreach (QuestionOption option in question.Question.Options)
-            {
-                if (keymode && option.CorrectAnswer)
-                    preview += "<b>";
-                preview += "<li>" + option.AnswerText + "</li>";
-                if (keymode && option.CorrectAnswer)
-                    preview += "</b>";
-            }
-            preview += "</ol></li>";
-        }
-        preview += "</ol>";
+        string preview = exam.GenerateHTML(images, keymode);
         var options = new DialogOptions()
         {
             CloseOnEscapeKey = true,
@@ -375,5 +381,46 @@
         var dialog = dialogService.ShowAsync<ExamPreviewer>("Preview Exam " + exam.TestName, parameters, options);
         var result = await dialog;
         var result2 = await result.Result;
+    }
+    private bool ShowClosedExams { get; set; } = false;
+    private async Task CloseExam(Exam exam)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Message), $"Close the exam \"{exam.TestName}\"?");
+        parameters.Add(nameof(ConfirmDialog.ButtonText), "Yes, Close");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Info);
+        var dialog = dialogService.ShowAsync<ConfirmDialog>("Confirm Close", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            exam.Closed = true;
+            testService.UpdateExam(exam);
+        }
+    }
+    private async Task DeleteExam(Exam exam)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Message), $"Delete the exam \"{exam.TestName}\"?");
+        parameters.Add(nameof(ConfirmDialog.ButtonText), "Yes, delete");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Error);
+        var dialog = dialogService.ShowAsync<ConfirmDialog>("Confirm Delete", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            Exams.Remove(exam);
+            testService.DeleteExam(exam);
+        }
     }
 }

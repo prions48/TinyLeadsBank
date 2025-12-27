@@ -1,0 +1,28 @@
+@using TinyLeadsBank.Data.Users
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider authProvider
+@inject UserService userService
+<MudThemeProvider />
+
+<CascadingValue Value="User">
+    @Body
+</CascadingValue>
+
+@code {
+    private Auth0User? User { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await authProvider.GetAuthenticationStateAsync();
+        if (result != null)
+        {
+            if (result.User?.Claims != null)
+            {
+                foreach (var claim in result.User.Claims)
+                {
+                    if (claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                        User = userService.GetUserByKey(claim.Value);
+                }
+            }
+        }
+    }
+}

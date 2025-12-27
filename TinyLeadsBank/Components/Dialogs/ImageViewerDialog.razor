@@ -1,0 +1,35 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+@inject TestBankService testService
+<MudDialog>
+    <DialogContent>
+        <MudStack>
+            <img src="data:image/png;base64, @Image.ImageContent" />
+            <MudTextField @bind-Value="ImageText" Label="Image Name" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info" Disabled="string.IsNullOrWhiteSpace(ImageText)">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Image Image { get; set; }
+    private string? ImageText { get; set; }
+    protected override void OnInitialized()
+    {
+        ImageText = Image.ImageName;
+    }
+    void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(ImageText))
+            return;
+        Image.ImageName = ImageText;
+        testService.UpdateImage(Image);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

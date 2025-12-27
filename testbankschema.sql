@@ -19,7 +19,8 @@ CREATE TABLE TestBankImages (
     ID UNIQUEIDENTIFIER NOT NULL,
     TopicID UNIQUEIDENTIFIER NOT NULL,
     ImageName NVARCHAR(1000) NOT NULL,
-    ImageContent NVARCHAR(1000) NOT NULL,
+    ImageContent NVARCHAR(MAX) NOT NULL,
+    CreatedTimeStamp DATETIME NOT NULL,
     PRIMARY KEY (ID)
 );
 CREATE TABLE TestBankQuestionOptions (
@@ -35,6 +36,7 @@ CREATE TABLE TestBankExams (
     UserID UNIQUEIDENTIFIER NOT NULL,
     TestName NVARCHAR(1000) NOT NULL,
     CreatedTimeStamp DATETIME NOT NULL,
+    Closed BIT NOT NULL,
     PRIMARY KEY (ID)
 );
 CREATE TABLE TestBankExamData (
@@ -51,5 +53,3 @@ CREATE TABLE TestBankExamQuestions (
     OrderNumber INT NOT NULL,
     PRIMARY KEY (ID)
 );
-
-

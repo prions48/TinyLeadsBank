@@ -10,7 +10,7 @@
 
 <MudLayout>
     <MudAppBar Color="Color.Info">
-        <MudIconButton Icon="@Icons.Material.TwoTone.Menu" OnClick="MenuToggle" />
+        @*<MudIconButton Icon="@Icons.Material.TwoTone.Menu" OnClick="MenuToggle" />*@
         <MudSpacer />
         @if (!String.IsNullOrEmpty(UserName))
         {
@@ -21,7 +21,7 @@
     </MudAppBar>
     <MudDrawer @bind-Open="MenuView">
         <MudNavMenu Color="Color.Info">
-            @* Put logo here?*@
+            @* hidden for now, can bring back if we want it later*@
             <br />
             <MudNavLink Href="/">Home</MudNavLink>
             <MudNavLink Href="/email">Email</MudNavLink>
@@ -46,7 +46,7 @@
 @code {
     private MudThemeProvider? Provider { get; set; }
     private bool DarkMode { get; set; }
-    private bool MenuView { get; set; } = true;
+    private bool MenuView { get; set; } = false;
     private Guid UserID { get; set; }
     private string? UserName { get; set; } = null;
     private Auth0User? User { get; set; } = null;

@@ -7,6 +7,19 @@
     <DialogContent>
         <MudStack>
             <MudTextField @bind-Value="Question.QuestionText" Lines="3" Label="Question Text" />
+            <MudStack Row>
+                <MudStack>
+                    <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Success" />
+                    @if (Image != null)
+                    {
+                        <MudIconButton OnClick="DeleteImage" Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" /> 
+                    }
+                </MudStack>
+                @if (Image != null)
+                {
+                    <img src="data:image/png;base64, @Image.ImageContent" />
+                }
+            </MudStack>
             <MudSimpleTable Striped Bordered>
                 <thead>
                     <tr>
@@ -54,8 +67,9 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Guid TopicID { get; set; }
+    [Parameter, EditorRequired] public Topic Topic { get; set; }
     [Parameter] public int OrderNumber { get; set; }
+    private Image? Image { get; set; }
     private string? AnswerText { get; set; }
     private bool Correct { get; set; }
     private Question Question { get; set; } = new();
@@ -78,10 +92,38 @@
     }
     void Submit()
     {
-        Question.TopicID = TopicID;
+        Question.TopicID = Topic.ID;
         Question.OrderNumber = OrderNumber;
         testService.CreateQuestion(Question);
         MudDialog.Close(DialogResult.Ok(Question));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private async Task AddImage()
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ImageGallery.Topic), Topic);
+        parameters.Add(nameof(ImageGallery.PickerMode), true);
+        var dialog = dialogService.ShowAsync<ImageGallery>("Select Image", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            if (result2.Data is Image image)
+            {
+                Question.ImageID = image.ID;
+                Image = image;
+            }
+        }
+    }
+    private void DeleteImage()
+    {
+        Question.ImageID = null;
+        Image = null;
+    }
 }

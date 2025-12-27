@@ -22,4 +22,25 @@
         MudDialog.Close(DialogResult.Ok(true));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
+
+    /*
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Message), $"Delete the topic \"{topic.TopicName}\"?");
+        parameters.Add(nameof(ConfirmDialog.ButtonText), "Yes, Delete");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Error);
+        var dialog = dialogService.ShowAsync<ConfirmDialog>("Confirm Delete?", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            Topics.Remove(topic);
+            testService.DeleteTopic(topic);
+        }
+    */
 }
+

@@ -7,7 +7,13 @@
     <DialogContent>
         <MudStack>
             <MudStack Row>
-                <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Success" /> 
+                <MudStack>
+                    <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Success" /> 
+                    @if (Image != null)
+                    {
+                        <MudIconButton OnClick="DeleteImage" Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" /> 
+                    }
+                </MudStack>
                 @if (Image != null)
                 {
                     <img src="data:image/png;base64, @Image.ImageContent" />
@@ -142,7 +148,14 @@
             {
                 Question.ImageID = image.ID;
                 Image = image;
+                SetDirty();
             }
         }
+    }
+    private void DeleteImage()
+    {
+        Image = null;
+        Question.ImageID = null;
+        SetDirty();
     }
 }

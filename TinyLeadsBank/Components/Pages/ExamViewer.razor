@@ -1,0 +1,39 @@
+@layout BlankLayout
+@page "/exam/{ExamId:guid?}"
+@using TinyLeadsBank.Components.Layout
+@using TinyLeadsBank.Data.TestBank
+@using TinyLeadsBank.Data.Users
+@inject TestBankService testService
+
+<PageTitle>@(Exam?.TestName ?? "Exam Viewer")</PageTitle>
+@if (Exam != null)
+{
+    @ExamText
+}
+@code {
+    [CascadingParameter] public Auth0User? User { get; set; }
+    [Parameter] public Guid? ExamId { get; set; }
+    private List<Image> Images { get; set; } = [];
+    private Exam? Exam { get; set; }
+    protected override void OnInitialized()
+    {
+        if (ExamId != null)
+        {
+            Exam = testService.GetExamByID(ExamId.Value);
+        }
+    }
+    private bool _loaded = false;
+    private string? _examText { get; set; }
+    private MarkupString? ExamText => (MarkupString)(_examText ?? "");
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (!_loaded && User != null)
+        {
+            Images = testService.GetImagesByUserID(User.UserID);
+            _loaded = true;
+        }
+        if (_loaded && Exam != null && string.IsNullOrWhiteSpace(_examText))
+            _examText = Exam.GenerateHTML(Images, false);
+    }
+}

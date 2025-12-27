@@ -24,7 +24,7 @@ namespace TinyLeadsBank.Data.TestBank
         }
         public List<Image> GetImagesByTopic(Guid topicid)
         {
-            return _context.TestBankImages.Where(e => e.TopicID == topicid).ToList();
+            return _context.TestBankImages.Where(e => e.TopicID == topicid).OrderBy(e => e.CreatedTimeStamp).ToList();
         }
         public List<Image> GetImagesByUserID(Guid userid)
         {
@@ -34,6 +34,11 @@ namespace TinyLeadsBank.Data.TestBank
         public void CreateImage(Image image)
         {
             _context.TestBankImages.Add(image);
+            _context.SaveChanges();
+        }
+        public void UpdateImage(Image image)
+        {
+            _context.TestBankImages.Update(image);
             _context.SaveChanges();
         }
         public Image? GetImageByID(Guid imageid)
@@ -96,16 +101,38 @@ namespace TinyLeadsBank.Data.TestBank
         #endregion
 
         #region Exams
+        public Exam? GetExamByID(Guid examid)
+        {
+            Exam? exam = _context.TestBankExams.FirstOrDefault(e => e.ID == examid);
+            if (exam == null)
+                return exam;
+            List<Question> questions = _context.TestBankQuestions.FromSqlRaw($"SELECT [TestBankQuestions].* FROM TestBankQuestions JOIN TestBankExamQuestions ON TestBankExamQuestions.QuestionID=TestBankQuestions.ID WHERE TestBankExamQuestions.ExamID='{exam.ID}'").ToList();
+            HashSet<Guid> questionids = questions.Select(e => e.ID).ToHashSet();
+            List<QuestionOption> options = _context.TestBankQuestionOptions.Where(e => questionids.Contains(e.QuestionID)).ToList();
+            //to do: add EF join instead of janky (yet working) SQL raw string join
+            exam.ExamQuestions = _context.TestBankExamQuestions.Where(e => e.ExamID == exam.ID).ToList();
+            foreach (ExamQuestion question in exam.ExamQuestions)
+            {
+                question.Question = questions.FirstOrDefault(e => e.ID == question.QuestionID)!;
+                if (question.Question != null)
+                    question.Question.Options = options.Where(e => e.QuestionID == question.QuestionID).ToList();
+            }
+            return exam;
+        }
         public List<Exam> GetExamsByUserID(Guid userid)
         {
             List<Exam> exams = _context.TestBankExams.Where(e => e.UserID == userid).ToList();
             List<Question> questions = _context.TestBankQuestions.FromSqlRaw($"SELECT [TestBankQuestions].* FROM TestBankQuestions JOIN TestBankTopics ON TestBankTopics.ID=TestBankQuestions.TopicID WHERE TestBankTopics.UserID='{userid}'").ToList();
+            HashSet<Guid> questionids = questions.Select(e => e.ID).ToHashSet();
+            List<QuestionOption> options = _context.TestBankQuestionOptions.Where(e => questionids.Contains(e.QuestionID)).ToList();
             foreach (Exam exam in exams)
             {
                 exam.ExamQuestions = _context.TestBankExamQuestions.Where(e => e.ExamID == exam.ID).ToList();
                 foreach (ExamQuestion question in exam.ExamQuestions)
                 {
                     question.Question = questions.FirstOrDefault(e => e.ID == question.QuestionID)!;
+                    if (question.Question != null)
+                        question.Question.Options = options.Where(e => e.QuestionID == question.QuestionID).ToList();
                 }
             }
             return exams;
@@ -116,6 +143,7 @@ namespace TinyLeadsBank.Data.TestBank
             foreach (ExamQuestion question in exam.ExamQuestions)
             {
                 _context.TestBankExamQuestions.Add(question);
+                question.CreateNew = false;
             }
             _context.SaveChanges();
         }
@@ -128,9 +156,32 @@ namespace TinyLeadsBank.Data.TestBank
                     _context.TestBankExamQuestions.Remove(question);
                 else if (question.CreateNew)
                     _context.TestBankExamQuestions.Add(question);
-                else
+                else if (!question.Delete)
                     _context.TestBankExamQuestions.Update(question);
+                question.CreateNew = false;
             }
+            _context.SaveChanges();
+            int ctr = 0;
+            while (ctr < exam.ExamQuestions.Count)
+            {
+                if (exam.ExamQuestions[ctr].Delete)
+                    exam.ExamQuestions.RemoveAt(ctr);
+                else
+                    ctr++;
+            }
+        }
+        /// <summary>
+        /// Warning: do not call from editor dialogs, this assumes all the ExamQuestions are in the db already
+        /// </summary>
+        /// <param name="exam"></param>
+        public void DeleteExam(Exam exam)
+        {
+            _context.TestBankExams.Remove(exam);
+            foreach (ExamQuestion question in exam.ExamQuestions)
+            {
+                _context.TestBankExamQuestions.Remove(question);
+            }
+            _context.SaveChanges();
         }
         #endregion
     }

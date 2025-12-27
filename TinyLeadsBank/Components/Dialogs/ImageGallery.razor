@@ -42,14 +42,23 @@
             Topic.Images = testService.GetImagesByTopic(Topic.ID);
     }
     Image? SelectedImage { get; set; } = null;
-    private void SelectImage(Image image)
+    private async Task SelectImage(Image image)
     {
         SelectedImage = image;
         if (PickerMode)
             Submit();
         else
         {
-            //open dialog for image
+            var options = new DialogOptions()
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.ExtraLarge
+            };
+            var parameters = new DialogParameters();
+            parameters.Add(nameof(ImageViewerDialog.Image), image);
+            var dialog = dialogService.ShowAsync<ImageViewerDialog>("View Image " + image.ImageName, parameters, options);
+            var result = await dialog;
+            var result2 = await result.Result;
         }
     }
     void Submit()
