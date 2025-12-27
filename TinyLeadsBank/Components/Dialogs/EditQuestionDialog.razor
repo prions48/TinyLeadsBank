@@ -6,6 +6,13 @@
 <MudDialog>
     <DialogContent>
         <MudStack>
+            <MudStack Row>
+                <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Success" /> 
+                @if (Image != null)
+                {
+                    <img src="data:image/png;base64, @Image.ImageContent" />
+                }
+            </MudStack>
             <MudTextField @bind-Value="Question.QuestionText"  @bind-Value:after="SetDirty" Disabled="!Edit" />
             <MudSimpleTable Striped Bordered>
                 <tbody>
@@ -61,10 +68,12 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter, EditorRequired] public Question Question { get; set; } = default!;
+    [Parameter, EditorRequired] public Topic Topic { get; set; } = default!;
     [Parameter] public bool Edit { get; set; } = false;
     private string? NewOption { get; set; }
     private bool NewOptionCorrect { get; set; }
     private List<QuestionOption> Options { get; set; } = [];
+    private Image? Image { get; set; }
     private bool IsDirty { get; set; } = false;
     private void SetDirty() => IsDirty = true;
     protected override void OnInitialized()
@@ -74,11 +83,13 @@
             option.Delete = false;
             option.CreateNew = false;
         }
+        if (Question.ImageID != null)
+            Image = testService.GetImageByID(Question.ImageID.Value);
     }
     void Submit()
     {
-        //if (IsDirty)
-            //testService.UpdateQuestion(Question);
+        if (IsDirty)
+            testService.UpdateQuestion(Question);
         MudDialog.Close(DialogResult.Ok(true));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
@@ -110,5 +121,28 @@
             option.OrderNumber = ctr++;
         }
         SetDirty();
+    }
+    private async Task AddImage()
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ImageGallery.Topic), Topic);
+        parameters.Add(nameof(ImageGallery.PickerMode), true);
+        var dialog = dialogService.ShowAsync<ImageGallery>("Select Image", parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+        if (result2?.Canceled == false)
+        {
+            if (result2.Data is Image image)
+            {
+                Question.ImageID = image.ID;
+                Image = image;
+            }
+        }
     }
 }

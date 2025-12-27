@@ -1,0 +1,87 @@
+@namespace TinyLeadsBank.Components.Pages.Dialogs
+@using TinyLeadsBank.Data.TestBank
+@inject IDialogService dialogService
+@inject TestBankService testService
+@inject ISnackbar Snackbar
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="12" md="12" lg="12" xl="12">
+                <MudTextField @bind-Value="ImageName" Label="Image Name" />
+                @if (!string.IsNullOrWhiteSpace(ImageName))
+                {
+                    <InputFile OnChange="UploadFile" />
+                }
+            </MudItem>
+            @foreach (Image image in Topic.Images)
+            {
+                <MudItem xs="4" sm=3 md=2 lg=1 xl=1>
+                    @*add on-click dialog popout with name editor?*@
+                    <img src="data:image/png;base64, @image.ImageContent" height="100" width="100" @onclick="() => SelectImage(image)" />
+                    <i>@image.ImageName</i>
+                </MudItem>
+            }
+            @if (Topic.Images.Count == 0)
+            {
+                <i>No images have been uploaded</i>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Topic Topic { get; set; }
+    [Parameter] public bool PickerMode { get; set; } = false;
+    protected override void OnInitialized()
+    {
+        if (Topic.Images.Count == 0)
+            Topic.Images = testService.GetImagesByTopic(Topic.ID);
+    }
+    Image? SelectedImage { get; set; } = null;
+    private void SelectImage(Image image)
+    {
+        SelectedImage = image;
+        if (PickerMode)
+            Submit();
+        else
+        {
+            //open dialog for image
+        }
+    }
+    void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(SelectedImage));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private string? ImageName { get; set; }
+    private async Task UploadFile(InputFileChangeEventArgs args)
+    {
+        if (!string.IsNullOrWhiteSpace(ImageName) && args.File != null)
+        {
+            try
+            {
+                var file = args.File.OpenReadStream();
+                MemoryStream stream = new();
+                await file.CopyToAsync(stream);
+                Image newimage = new()
+                {
+                    TopicID = Topic.ID,
+                    ImageName = ImageName!,
+                    ImageContent = Convert.ToBase64String(stream.ToArray())
+                };
+                testService.CreateImage(newimage);
+                Topic.Images.Add(newimage);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+
+        }
+
+    }
+}

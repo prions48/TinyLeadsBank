@@ -4,8 +4,8 @@
 @using TinyLeadsBank.Data.Users
 @inject TestBankService testService
 @inject IDialogService dialogService
-@*<AuthorizeView>
-    <Authorized>*@
+<AuthorizeView>
+    <Authorized>
         @if (Loaded)
         {
             <MudExpansionPanels MultiExpansion>
@@ -46,7 +46,8 @@
                             <MudStack Row Justify="Justify.SpaceBetween">
                                 <MudText>@topic.TopicName</MudText>
                                 <MudStack Row>
-                                    <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.Add" OnClick="() => AddQuestion(topic)" />
+                                    <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.UploadFile" OnClick="() => OpenImageGallery(topic)" />
+                                    <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AddQuestion(topic)" />
                                     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.ListAlt" OnClick="() => EditCategories(topic)" />
                                     <MudIconButton Color="Color.Error" Icon="@Icons.Material.TwoTone.DeleteForever" OnClick="() => DeleteTopic(topic)" />
                                 </MudStack>
@@ -92,11 +93,11 @@
         {
             <MudButton OnClick="Load" Variant="Variant.Filled">Load</MudButton>
         }
-    @*</Authorized>
+    </Authorized>
     <NotAuthorized>
         <i>Please log in</i>
     </NotAuthorized>
-</AuthorizeView>*@
+</AuthorizeView>
 
 @code {
     [CascadingParameter] public Auth0User? User { get; set; }
@@ -105,10 +106,11 @@
     private List<Exam> Exams { get; set; } = [];
     private void Load()
     {
-        //if (User == null)
-        //    return;
-        //Topics = testService.GetTopicsByUserID(User.UserID);
-        Topics = new List<Topic>(){
+        if (User == null)
+            return;
+        Topics = testService.GetTopicsByUserID(User.UserID);
+        Exams = testService.GetExamsByUserID(User.UserID);
+        /*Topics = new List<Topic>(){
             new() { TopicName = "Topic 1", Questions = new List<Question>() {
                 new Question()
                 {
@@ -148,7 +150,7 @@
                 }
             },
         }
-        };
+        };*/
         Loaded = true;
     }
     private async Task AddQuestion(Topic topic)
@@ -180,6 +182,7 @@
         };
         var parameters = new DialogParameters();
         parameters.Add(nameof(EditQuestionDialog.Question), question);
+        parameters.Add(nameof(EditQuestionDialog.Topic), Topics.FirstOrDefault(e => e.ID == question.TopicID));
         parameters.Add(nameof(EditQuestionDialog.Edit), true);
         var dialog = dialogService.ShowAsync<EditQuestionDialog>("Edit Question", parameters, options);
         var result = await dialog;
@@ -213,7 +216,7 @@
             MaxWidth = MaxWidth.Medium
         };
         var parameters = new DialogParameters();
-        parameters.Add(nameof(ConfirmDialog.Message), $"Delete the question \"{question.QuestionText.Substring(30)}\"?");
+        parameters.Add(nameof(ConfirmDialog.Message), $"Delete the question \"{(question.QuestionText?.Length > 30 ? question.QuestionText.Substring(0, 30) : question.QuestionText)}\"?");
         parameters.Add(nameof(ConfirmDialog.ButtonText), "Yes, Delete");
         parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Error);
         var dialog = dialogService.ShowAsync<ConfirmDialog>("Confirm Delete?", parameters, options);
@@ -266,7 +269,7 @@
             if (newtopic != null)
             {
                 Topics.Add(newtopic);
-                //testService.CreateTopic(newtopic);
+                testService.CreateTopic(newtopic);
             }
         }
     }
@@ -307,6 +310,8 @@
         var options2 = new DialogOptions()
             {
                 CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                //FullScreen = true,
                 FullWidth = true
             };
         var parameters2 = new DialogParameters();
@@ -326,13 +331,29 @@
             }
         }
     }
+    private async Task OpenImageGallery(Topic topic)
+    {
+        var options = new DialogOptions()
+        {
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraLarge
+        };
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ImageGallery.Topic), topic);
+        var dialog = dialogService.ShowAsync<ImageGallery>("Image Gallery for " + topic.TopicName, parameters, options);
+        var result = await dialog;
+        var result2 = await result.Result;
+
+    }
     private async Task PreviewExam(Exam exam, bool keymode = false)
     {
         //open dialog
         string preview = "<ol type=\"1\">";
+        List<Image> images = testService.GetImagesByUserID(User.UserID);
         foreach (ExamQuestion question in exam.ExamQuestions.OrderBy(e => e.OrderNumber))
         {
-            preview += "<li>" + question.Question.QuestionText + "<ol type=\"A\">";
+            preview += "<li>" + (question.Question.ImageID == null ? "" : $"<img src=\"data:image/png;base64, {images.FirstOrDefault(e => e.ID == question.Question.ImageID)?.ImageContent}\" /><br />") + question.Question.QuestionText + "<ol type=\"A\">";
             foreach (QuestionOption option in question.Question.Options)
             {
                 if (keymode && option.CorrectAnswer)

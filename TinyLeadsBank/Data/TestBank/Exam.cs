@@ -8,7 +8,7 @@ namespace TinyLeadsBank.Data.TestBank
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public Guid UserID { get; set; }
         public string TestName { get; set; } = "";
-        public Guid CreatedTimeStamp { get; set; }
+        public DateTime CreatedTimeStamp { get; set; } = DateTime.Now;
         [NotMapped] public List<ExamQuestion> ExamQuestions { get; set; } = [];
     }
 }

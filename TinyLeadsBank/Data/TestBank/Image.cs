@@ -7,6 +7,7 @@ namespace TinyLeadsBank.Data.TestBank
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public Guid TopicID { get; set; }
         public string ImageName { get; set; } = "";
-        public string BlobPath { get; set; } = "";
+        public string ImageContent { get; set; } = "";
+        public DateTime CreatedTimeStamp { get; set; } = DateTime.Now;
     }
 }

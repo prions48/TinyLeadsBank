@@ -28,7 +28,7 @@
                                 </td>
                                 <td>
                                     <MudIconButton Color="Color.Info" Icon="@Icons.Material.Filled.AddCircle" 
-                                    Disabled="Exam.ExamQuestions.Any(e => e.QuestionID == question.ID)" OnClick="() => SwitchQuestion(question)" />
+                                    Disabled="Exam.ExamQuestions.Where(e => !e.Delete).Any(e => e.QuestionID == question.ID)" OnClick="() => SwitchQuestion(question)" />
                                 </td>
                             </tr>
                         }
@@ -83,11 +83,11 @@
         if (Exam.UserID == Guid.Empty)
         {
             Exam.UserID = UserID;
-            //testService.CreateExam(Exam);
+            testService.CreateExam(Exam);
         }
         else
         {
-            //testService.UpdateExam(Exam);
+            testService.UpdateExam(Exam);
         }
         MudDialog.Close(DialogResult.Ok(Exam));
     }
