@@ -8,7 +8,7 @@
         <MudStack>
             <MudStack Row>
                 <MudStack>
-                    <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Success" /> 
+                    <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Tertiary" /> 
                     @if (Image != null)
                     {
                         <MudIconButton OnClick="DeleteImage" Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" /> 
@@ -19,14 +19,14 @@
                     <img src="data:image/png;base64, @Image.ImageContent" />
                 }
             </MudStack>
-            <MudTextField @bind-Value="Question.QuestionText"  @bind-Value:after="SetDirty" Disabled="!Edit" />
+            <MudTextField @bind-Value="Question.QuestionText"  @bind-Value:after="SetDirty" Disabled="!Edit" Lines="3" Immediate />
             <MudSimpleTable Striped Bordered>
                 <tbody>
                     @foreach (QuestionOption option in Question.Options.Where(e => !e.Delete))
                     {
                         <tr>
                             <td>
-                                <MudTextField @bind-Value="option.AnswerText" @bind-Value:after="SetDirty" Disabled="!Edit" />
+                                <MudTextField @bind-Value="option.AnswerText" @bind-Value:after="SetDirty" Disabled="!Edit" Immediate />
                             </td>
                             <td>
                                 <MudCheckBox @bind-Value="option.CorrectAnswer" Disabled="!Edit" />
@@ -43,13 +43,13 @@
                     {
                         <tr>
                             <td>
-                                <MudTextField @bind-Value="NewOption" />
+                                <MudTextField @bind-Value="NewOption" Immediate />
                             </td>
                             <td>
                                 <MudCheckBox @bind-Value="NewOptionCorrect" />
                             </td>
                             <td>
-                                <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" OnClick="Add" Disabled="string.IsNullOrWhiteSpace(NewOption)" />
+                                <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Info" OnClick="Add" Disabled="string.IsNullOrWhiteSpace(NewOption)" />
                             </td>
                         </tr>
                     }
@@ -62,7 +62,7 @@
         {
             <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info"
             Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Any(e => string.IsNullOrWhiteSpace(e.AnswerText)) 
-            || Question.Options.Where(e => !e.Delete).Count(e => e.CorrectAnswer) != 1">Save</MudButton>
+            || Question.Options.Where(e => !e.Delete).Count(e => e.CorrectAnswer) != 1|| Question.Options.Count(e => !e.Delete) < 2">Save</MudButton>
         }
         else
         {
@@ -118,6 +118,7 @@
         };
         Question.Options.Add(option);
         ResetNumbers();
+        NewOption = null;
     }
     private void ResetNumbers()
     {

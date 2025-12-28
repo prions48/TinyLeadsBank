@@ -28,9 +28,9 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        if (!_loaded && User != null)
+        if (!_loaded && ExamId != null)
         {
-            Images = testService.GetImagesByUserID(User.UserID);
+            Images = testService.GetImagesByExamID(ExamId.Value);
             _loaded = true;
         }
         if (_loaded && Exam != null && string.IsNullOrWhiteSpace(_examText))

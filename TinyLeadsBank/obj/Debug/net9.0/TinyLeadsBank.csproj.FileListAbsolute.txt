@@ -222,3 +222,4 @@
 /Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/obj/Debug/net9.0/compressed/tzxjg6is5z-7c7lhmh1j6.gz
 /Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/obj/Debug/net9.0/compressed/0wz98yz2xy-f96y5mhlyw.gz
 /Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/obj/Debug/net9.0/TinyLeadsBank.sourcelink.json
+/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/bin/Debug/net9.0/FuzzySharp.dll

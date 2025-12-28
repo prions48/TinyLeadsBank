@@ -1,7 +1,9 @@
 @namespace TinyLeadsBank.Components.Pages.Dialogs
 @using TinyLeadsBank.Data.TestBank
+@using FuzzySharp
 @inject IDialogService dialogService
 @inject TestBankService testService
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
@@ -103,6 +105,14 @@
         }
         else
         {
+            foreach (ExamQuestion eq in Exam.ExamQuestions.Where(e => !e.Delete))
+            {
+                if (Fuzz.Ratio(eq.Question.QuestionText,question.QuestionText) == 100)
+                {
+                    Snackbar.Add("Identical question detected on exam.", Severity.Warning);
+                    return;
+                }
+            }
             Exam.ExamQuestions.Add(new() { ExamID = Exam.ID, OrderNumber=Exam.ExamQuestions.Count+1, QuestionID=question.ID, Question=question, CreateNew = true});
         }
     }

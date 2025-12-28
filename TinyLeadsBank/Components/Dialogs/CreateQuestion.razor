@@ -1,15 +1,17 @@
 @namespace TinyLeadsBank.Components.Pages.Dialogs
 @using TinyLeadsBank.Data.TestBank
+@using FuzzySharp
+@inject ISnackbar Snackbar
 @inject IDialogService dialogService
 @inject TestBankService testService
 
 <MudDialog>
     <DialogContent>
         <MudStack>
-            <MudTextField @bind-Value="Question.QuestionText" Lines="3" Label="Question Text" />
+            <MudTextField @bind-Value="Question.QuestionText" Lines="3" Label="Question Text" Immediate />
             <MudStack Row>
                 <MudStack>
-                    <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Success" />
+                    <MudIconButton OnClick="AddImage" Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Tertiary" />
                     @if (Image != null)
                     {
                         <MudIconButton OnClick="DeleteImage" Icon="@Icons.Material.TwoTone.DeleteForever" Color="Color.Error" /> 
@@ -61,7 +63,7 @@
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
         <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info" 
-        Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Count(e => e.CorrectAnswer) != 1 || !string.IsNullOrEmpty(AnswerText)">Submit</MudButton>
+        Disabled="string.IsNullOrWhiteSpace(Question.QuestionText) || Question.Options.Count(e => e.CorrectAnswer) != 1 || !string.IsNullOrEmpty(AnswerText) || Question.Options.Count < 2">Submit</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -92,6 +94,17 @@
     }
     void Submit()
     {
+        for (int i = 0; i < Question.Options.Count; i++)
+        {
+            for (int j = i + 1; j < Question.Options.Count; j++)
+            {
+                if (Fuzz.Ratio(Question.Options[i].AnswerText,Question.Options[j].AnswerText) == 100)
+                {
+                    Snackbar.Add("Identical answer options detected.", Severity.Warning);
+                    return;
+                }
+            }
+        }
         Question.TopicID = Topic.ID;
         Question.OrderNumber = OrderNumber;
         testService.CreateQuestion(Question);

@@ -2,6 +2,7 @@
 @using TinyLeadsBank.Components.Pages.Dialogs
 @using TinyLeadsBank.Data.TestBank
 @using TinyLeadsBank.Data.Users
+@using FuzzySharp
 @inject TestBankService testService
 @inject IDialogService dialogService
 @inject NavigationManager navManager
@@ -55,7 +56,7 @@
                             <MudStack Row Justify="Justify.SpaceBetween">
                                 <MudText>@topic.TopicName</MudText>
                                 <MudStack Row>
-                                    <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.UploadFile" OnClick="() => OpenImageGallery(topic)" />
+                                    <MudIconButton Color="Color.Tertiary" Icon="@Icons.Material.TwoTone.UploadFile" OnClick="() => OpenImageGallery(topic)" />
                                     <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AddQuestion(topic)" />
                                     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.ListAlt" OnClick="() => EditCategories(topic)" />
                                     <MudIconButton Color="Color.Error" Icon="@Icons.Material.TwoTone.DeleteForever" OnClick="() => DeleteTopic(topic)" />
@@ -188,7 +189,61 @@
         {
             var newquestion = result2.Data as Question;
             if (newquestion != null)
-                topic.Questions.Add(newquestion);
+            {
+                List<Question> fullmatches = [];
+                List<Question> partialmatches = [];
+                foreach (Question question in topic.Questions)
+                {
+                    var ratio = Fuzz.Ratio(question.QuestionText,newquestion.QuestionText);
+                    if (ratio == 100)
+                        fullmatches.Add(question);
+                    else if (ratio > 90)
+                        partialmatches.Add(question);
+                }
+                bool proceed = partialmatches.Count == 0 && fullmatches.Count == 0;
+                if (fullmatches.Count > 0)
+                {
+                    var options2 = new DialogOptions()
+                    {
+                        CloseOnEscapeKey = true,
+                        MaxWidth = MaxWidth.Medium
+                    };
+                    var parameters2 = new DialogParameters();
+                    parameters2.Add(nameof(ConfirmDialog.Message), $"WARNING: question has {fullmatches.Count} exact match{(fullmatches.Count == 1 ? "" : "es")} already in topic.  Continue creating question?");
+                    parameters2.Add(nameof(ConfirmDialog.ButtonText), "Yes, Create");
+                    parameters2.Add(nameof(ConfirmDialog.ButtonColor), Color.Success);
+                    var dialog2 = dialogService.ShowAsync<ConfirmDialog>("Duplicate Question", parameters2, options2);
+                    var result3 = await dialog2;
+                    var result4 = await result3.Result;
+                    if (result4?.Canceled == false)
+                    {
+                        proceed = true;
+                    }
+                }
+                if (partialmatches.Count > 0)
+                {
+                    var options2 = new DialogOptions()
+                    {
+                        CloseOnEscapeKey = true,
+                        MaxWidth = MaxWidth.Medium
+                    };
+                    var parameters2 = new DialogParameters();
+                    parameters2.Add(nameof(ConfirmDialog.Message), $"WARNING: question has {partialmatches.Count} partial match{(partialmatches.Count == 1 ? "" : "es")} already in topic.  Continue creating question?");
+                    parameters2.Add(nameof(ConfirmDialog.ButtonText), "Yes, Create");
+                    parameters2.Add(nameof(ConfirmDialog.ButtonColor), Color.Success);
+                    var dialog2 = dialogService.ShowAsync<ConfirmDialog>("Duplicate Question", parameters2, options2);
+                    var result3 = await dialog2;
+                    var result4 = await result3.Result;
+                    if (result4?.Canceled == false)
+                    {
+                        proceed = true;
+                    }
+                }
+                if (proceed)
+                    topic.Questions.Add(newquestion);
+                else
+                    testService.DeleteQuestion(newquestion);
+            }
         }
     }
     private async Task EditQuestion(Question question)
@@ -366,10 +421,7 @@
     }
     private async Task PreviewExam(Exam exam, bool keymode = false)
     {
-        if (User == null)
-            return;
-        //open dialog
-        List<Image> images = testService.GetImagesByUserID(User.UserID);
+        List<Image> images = testService.GetImagesByExamID(exam.ID);
         string preview = exam.GenerateHTML(images, keymode);
         var options = new DialogOptions()
         {

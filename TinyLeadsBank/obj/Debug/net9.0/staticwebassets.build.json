@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "RvvhvMXK/47CtgRwQ1IXOpA3wVFC+i3XYslvOFS++QU=",
+  "Hash": "jIhS8QOCk9BPHpYQY6uq4twgOGxpZQgVoEsLpCESRjA=",
   "Source": "TinyLeadsBank",
   "BasePath": "_content/TinyLeadsBank",
   "Mode": "Default",
@@ -1149,6 +1149,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/app.css"
+    },
+    {
+      "Identity": "/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/wwwroot/businesskitty.jpg",
+      "SourceId": "TinyLeadsBank",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/wwwroot/",
+      "BasePath": "_content/TinyLeadsBank",
+      "RelativePath": "businesskitty#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "l6ufb95y48",
+      "Integrity": "jcVodkf++esg2zYeg/10StLaevh0lkzkG7CFn42SSy0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/businesskitty.jpg"
     },
     {
       "Identity": "/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/wwwroot/favicon.png",
@@ -2740,6 +2761,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-sVqJu2q90LLmT7BmsbLu4VRQ5J/XF0EAIfd5QfY4EbU="
+        }
+      ]
+    },
+    {
+      "Route": "businesskitty.jpg",
+      "AssetFile": "/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/wwwroot/businesskitty.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "50929"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jcVodkf++esg2zYeg/10StLaevh0lkzkG7CFn42SSy0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 06 Apr 2025 13:31:03 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-jcVodkf++esg2zYeg/10StLaevh0lkzkG7CFn42SSy0="
+        }
+      ]
+    },
+    {
+      "Route": "businesskitty.l6ufb95y48.jpg",
+      "AssetFile": "/Users/prions/Coding/TinyLeadsBank/TinyLeadsBank/wwwroot/businesskitty.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "50929"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jcVodkf++esg2zYeg/10StLaevh0lkzkG7CFn42SSy0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 06 Apr 2025 13:31:03 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "l6ufb95y48"
+        },
+        {
+          "Name": "label",
+          "Value": "businesskitty.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-jcVodkf++esg2zYeg/10StLaevh0lkzkG7CFn42SSy0="
         }
       ]
     },

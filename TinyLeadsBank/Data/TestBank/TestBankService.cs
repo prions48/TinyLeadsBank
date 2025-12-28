@@ -31,6 +31,11 @@ namespace TinyLeadsBank.Data.TestBank
             //YES I know EF can do joins.  I'll add it later ok?  I'm tired and I know this works.
             return _context.TestBankImages.FromSqlRaw($"SELECT [TestBankImages].* FROM TestBankImages JOIN TestBankTopics ON TestBankTopics.ID=TestBankImages.TopicID WHERE TestBankTopics.UserID='{userid}'").ToList();
         }
+        public List<Image> GetImagesByExamID(Guid examid)
+        {
+            //Still to do: EF joins.  But this will scale waaaaay better than the above function
+            return _context.TestBankImages.FromSqlRaw($"SELECT [TestBankImages].* FROM TestBankImages JOIN TestBankQuestions ON TestBankQuestions.ImageID=TestBankImages.ID JOIN TestBankExamQuestions ON TestBankExamQuestions.QuestionID=TestBankQuestions.ID WHERE TestBankExamQuestions.ExamID='{examid}'").Distinct().ToList();
+        }
         public void CreateImage(Image image)
         {
             _context.TestBankImages.Add(image);
